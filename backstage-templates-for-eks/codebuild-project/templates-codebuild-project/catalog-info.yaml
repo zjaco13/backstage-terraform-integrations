@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: codebuild-${{values.name}}
+  description: CodeBuild project ${{ values.name }}
+  annotations:
+    backstage.io/kubernetes-namespace: ${{values.namespace}}
+spec:
+  type: kubernetes-cluster
+  lifecycle: experimental
+  owner: guest
+  system: ${{values.name | dump}}

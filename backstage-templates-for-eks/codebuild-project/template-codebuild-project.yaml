@@ -1,0 +1,84 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  description: Creates a CodeBuild project that deploys dev and prod EKS clusters
+  name: codebuild-project
+  title: EKS Observability - OSS Infra Monitoring
+spec:
+  owner: guest
+  type: service
+  parameters:
+    - properties:
+        tfVars:
+          properties:
+            aws_region:
+              description: AWS Region
+              type: string
+            mngmt_cluster_instance_name:
+              description: Name of the EC2 instance hosting the management cluster
+              type: string
+            dev_cluster_name:
+              description: Name of the dev cluster to be created
+              type: string
+              default: appmod-dev
+            prod_cluster_name:
+              description: Name of the prod cluster to be created
+              type: string
+              default: appmod-prod
+            codebuild_project_name:
+              description: Name of codebuild project
+              type: string
+              default: cluster-create-codebuild
+          required:
+            - aws_region
+            - mngmt_cluster_instance_name
+          title: Terraform variables
+          type: object
+        name:
+          title: name of this entry
+          type: string
+        namespace:
+          default: flux-system
+          title: namespace within the kubernetes cluster to deploy this
+          type: string
+      title: Configuration Options
+  steps:
+    - action: fetch:template
+      id: fetch-base
+      input:
+        url: ./templates-codebuild-project/
+        values:
+          name: ${{ parameters.name }}
+          namespace: ${{ parameters.namespace }}
+          tfVars: ${{ parameters.tfVars }}
+      name: Fetch Base
+    - id: publish
+      name: Publishing to a gitea git repository
+      action: publish:gitea
+      input:
+        description: CodeBuild create clusters template
+        # Hard coded value for this demo purposes only.
+        repoUrl: cnoe.localtest.me:8443/gitea?repo=${{parameters.name}}
+        defaultBranch: main
+    - id: create-argocd-app
+      name: Create ArgoCD App
+      action: cnoe:create-argocd-app
+      input:
+        appName: ${{parameters.name}}
+        appNamespace: ${{parameters.namespace}}
+        argoInstance: in-cluster
+        projectName: default
+        # necessary until we generate our own cert
+        repoUrl: http://my-gitea-http.gitea.svc.cluster.local:3000/giteaAdmin/${{parameters.name}}
+        path: "manifests"
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: 'catalog-info.yaml'
+  output:
+    links:
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

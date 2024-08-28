@@ -1,0 +1,33 @@
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: "codebuild-${{values.name}}-terraform"
+  namespace: flux-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  interval: 1m
+  approvePlan: auto
+  path: ./platform/infra/terraform/create-clusters
+  sourceRef:
+    kind: GitRepository
+    name: "codebuild-${{values.name}}-git-repository"
+    namespace: flux-system
+  vars:
+    - name: aws_region
+      value: ${{ values.tfVars.aws_region }}
+    - name: mngmt_cluster_instance_name
+      value: ${{ values.tfVars.mngmt_cluster_instance_name }}
+    - name: dev_cluster_name
+      value: ${{ values.tfVars.dev_cluster_name }}
+    - name: prod_cluster_name
+      value: ${{ values.tfVars.prod_cluster_name }}
+    - name: codebuild_project_name
+      value: ${{ values.tfVars.codebuild_project_name }}
+  retryInterval: 10s
+  destroyResourcesOnDeletion: true
+  runnerPodTemplate:
+    spec:
+      envFrom:
+        - secretRef:
+            name: aws-credentials
