@@ -41,6 +41,10 @@ spec:
           default: flux-system
           title: namespace within the kubernetes cluster to deploy this
           type: string
+        repoUrl:
+          default: gitea.zjacobso.people.aws.dev
+          title: Repo URL of your Gitea Repo integrated with Backstage
+          type: string
       title: Configuration Options
   steps:
     - action: fetch:template
@@ -58,7 +62,8 @@ spec:
       input:
         description: CodeBuild create clusters template
         # Hard coded value for this demo purposes only.
-        repoUrl: cnoe.localtest.me:8443/gitea?repo=${{parameters.name}}
+        # repoUrl: cnoe.localtest.me:8443/gitea?repo=${{parameters.name}}
+        repoUrl: ${{parameters.repoUrl}}?repo=${{parameters.name}}
         defaultBranch: main
     - id: create-argocd-app
       name: Create ArgoCD App
