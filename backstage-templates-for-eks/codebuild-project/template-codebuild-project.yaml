@@ -14,9 +14,6 @@ spec:
             aws_region:
               description: AWS Region
               type: string
-            mngmt_cluster_instance_name:
-              description: Name of the EC2 instance hosting the management cluster
-              type: string
             dev_cluster_name:
               description: Name of the dev cluster to be created
               type: string
@@ -29,9 +26,13 @@ spec:
               description: Name of codebuild project
               type: string
               default: cluster-create-codebuild
+            mngmt_cluster_gitea_url:
+              default: gitea.zjacobso.people.aws.dev
+              title: Repo URL of your Gitea Repo integrated with Backstage
+              type: string
           required:
             - aws_region
-            - mngmt_cluster_instance_name
+            - mngmt_cluster_gitea_url
           title: Terraform variables
           type: object
         name:
@@ -40,10 +41,6 @@ spec:
         namespace:
           default: flux-system
           title: namespace within the kubernetes cluster to deploy this
-          type: string
-        repoUrl:
-          default: gitea.zjacobso.people.aws.dev
-          title: Repo URL of your Gitea Repo integrated with Backstage
           type: string
       title: Configuration Options
   steps:
@@ -63,7 +60,7 @@ spec:
         description: CodeBuild create clusters template
         # Hard coded value for this demo purposes only.
         # repoUrl: cnoe.localtest.me:8443/gitea?repo=${{parameters.name}}
-        repoUrl: ${{parameters.repoUrl}}?repo=${{parameters.name}}
+        repoUrl: ${{parameters.tfVars.mngmt_cluster_gitea_url}}?repo=${{parameters.name}}
         defaultBranch: main
     - id: create-argocd-app
       name: Create ArgoCD App
