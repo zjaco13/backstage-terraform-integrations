@@ -11,3 +11,4 @@ spec:
     - ./s3-bucket/template-s3-bucket.yaml
     - ./eks-nvdia-gpu-efa/template-nvidia-gpu-efa.yaml
     - ./serverless-microservice/template-serverless-microservice.yaml
+    - ./codebuild-project/template-codebuild-project.yaml
