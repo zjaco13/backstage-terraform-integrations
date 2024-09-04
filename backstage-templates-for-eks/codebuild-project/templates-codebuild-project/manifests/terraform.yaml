@@ -16,8 +16,8 @@ spec:
   vars:
     - name: aws_region
       value: ${{ values.tfVars.aws_region }}
-    - name: mngmt_cluster_instance_name
-      value: ${{ values.tfVars.mngmt_cluster_instance_name }}
+    - name: mngmt_cluster_gitea_url
+      value: ${{ values.tfVars.mngmt_cluster_gitea_url }}
     - name: dev_cluster_name
       value: ${{ values.tfVars.dev_cluster_name }}
     - name: prod_cluster_name
