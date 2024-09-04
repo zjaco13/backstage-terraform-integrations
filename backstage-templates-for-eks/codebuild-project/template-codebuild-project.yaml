@@ -3,7 +3,7 @@ kind: Template
 metadata:
   description: Creates a CodeBuild project that deploys dev and prod EKS clusters
   name: codebuild-project
-  title: EKS Observability - OSS Infra Monitoring
+  title: CodeBuild EKS Clusters
 spec:
   owner: guest
   type: service
