@@ -9,32 +9,6 @@ spec:
   type: service
   parameters:
     - properties:
-        tfVars:
-          properties:
-            aws_region:
-              description: AWS Region
-              type: string
-            dev_cluster_name:
-              description: Name of the dev cluster to be created
-              type: string
-              default: appmod-dev
-            prod_cluster_name:
-              description: Name of the prod cluster to be created
-              type: string
-              default: appmod-prod
-            codebuild_project_name:
-              description: Name of codebuild project
-              type: string
-              default: cluster-create-codebuild
-            mngmt_cluster_gitea_url:
-              default: gitea.zjacobso.people.aws.dev
-              title: Repo URL of your Gitea Repo integrated with Backstage
-              type: string
-          required:
-            - aws_region
-            - mngmt_cluster_gitea_url
-          title: Terraform variables
-          type: object
         name:
           title: name of this entry
           type: string
@@ -42,7 +16,20 @@ spec:
           default: flux-system
           title: namespace within the kubernetes cluster to deploy this
           type: string
+        aws_region:
+          default: us-west-2
+          title: aws region with codebuild project
+          type: string
+        mgmt_cluster_gitea_url:
+          title: URL of gitea app on management cluster  
+          type: string
+        codebuild_project_name:
+          default: cluster-create-codebuild
+          title: codebuild project to trigger
+          type: string
       title: Configuration Options
+      required:
+        - mgmt_cluster_gitea_url
   steps:
     - action: fetch:template
       id: fetch-base
@@ -51,7 +38,8 @@ spec:
         values:
           name: ${{ parameters.name }}
           namespace: ${{ parameters.namespace }}
-          tfVars: ${{ parameters.tfVars }}
+          aws_region: ${{ parameters.aws_region }}
+          codebuild_project_name: ${{ parameters.codebuild_project_name }}
       name: Fetch Base
     - id: publish
       name: Publishing to a gitea git repository
@@ -59,8 +47,7 @@ spec:
       input:
         description: CodeBuild create clusters template
         # Hard coded value for this demo purposes only.
-        # repoUrl: cnoe.localtest.me:8443/gitea?repo=${{parameters.name}}
-        repoUrl: ${{parameters.tfVars.mngmt_cluster_gitea_url}}?repo=${{parameters.name}}
+        repoUrl: ${{parameters.mgmt_cluster_gitea_url}}?repo=${{parameters.name}}
         defaultBranch: main
     - id: create-argocd-app
       name: Create ArgoCD App
